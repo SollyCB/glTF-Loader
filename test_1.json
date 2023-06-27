@@ -1,0 +1,115 @@
+{
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [0, 1]
+    }
+  ],
+  "nodes" : [
+    {
+      "mesh" : 0
+    },
+    {
+      "mesh" : 0,
+      "translation" : [ 1.0, 0.0, 0.0 ]
+    },
+    {
+        "name": "Car",
+        "children": [1, 2, 3, 4]
+    },
+    {
+        "name": "Box",
+        "rotation": [
+            0,
+            0,
+            0,
+            1
+        ],
+        "scale": [
+            1,
+            1,
+            1
+        ],
+        "translation": [
+            -17.7082,
+            -11.4156,
+            2.0922
+        ]
+    },
+    {
+        "name": "node-camera",
+        "camera": 1,
+        "matrix": [
+            -0.99975,
+            -0.00679829,
+            0.0213218,
+            0,
+            0.00167596,
+            0.927325,
+            0.374254,
+            0,
+            -0.0223165,
+            0.374196,
+            -0.927081,
+            0,
+            -0.0115543,
+            0.194711,
+            -0.478297,
+            1
+        ]
+    }
+  ],
+  "buffers": [
+       {
+           "byteLength": 102040,
+           "uri": "duck.bin"
+       }
+   ],
+   "bufferViews": [
+      {
+          "buffer": 0,
+          "byteLength": 25272,
+          "byteOffset": 0,
+          "target": 34963
+      },
+      {
+          "buffer": 0,
+          "byteLength": 76768,
+          "byteOffset": 25272,
+          "byteStride": 32,
+          "target": 34962
+      }
+  ],
+  "accessors": [
+      {
+          "bufferView": 0,
+          "byteOffset": 0,
+          "componentType": 5123,
+          "count": 12636,
+          "type": "VEC3",
+          "sparse": {
+              "count": 10,
+              "indices": {
+                  "bufferView": 1,
+                  "byteOffset": 0,
+                  "componentType": 5123
+              },
+              "values": {
+                  "bufferView": 2,
+                  "byteOffset": 0
+              }
+          }
+      },
+      {
+          "bufferView": 0,
+          "byteOffset": 4608,
+          "componentType": 5123,
+          "count": 42,
+          "type": "VEC2"
+      }
+  ],
+  "asset" : {
+    "version" : "2.0",
+    "copyright" : "GAY COPYRIGHT"
+  }
+}
