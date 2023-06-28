@@ -54,7 +54,7 @@ struct Nodes {
 
 // Buffers & BufferViews
 struct Buffer {
-  size_t byte_length;
+  uint32_t byte_length;
   StringBuffer uri;
   void fill(Json json);
 };
@@ -68,9 +68,9 @@ struct BufferView {
     ARRAY_BUFFER = 34962,
     ELEMENT_ARRAY_BUFFER = 34963,
   };
-  size_t byte_length = UINT64_MAX;
-  size_t byte_offset = UINT64_MAX;
-  size_t byte_stride = UINT64_MAX;
+  uint32_t byte_length = UINT32_MAX;
+  uint32_t byte_offset = UINT32_MAX;
+  uint32_t byte_stride = UINT32_MAX;
   uint32_t buffer = UINT32_MAX;
   Target target = NONE;
 
@@ -94,30 +94,30 @@ struct Accessor {
   };
   struct Sparse {
     struct Indices {
-      size_t byte_offset = UINT64_MAX;
+      uint32_t byte_offset = UINT32_MAX;
       uint32_t buffer_view = UINT32_MAX;
       ComponentType component_type = NONE;
       void fill(Json json);
     };
     struct Values {
-      size_t byte_offset = UINT64_MAX;
+      uint32_t byte_offset = UINT32_MAX;
       uint32_t buffer_view = UINT32_MAX;
       void fill(Json json);
     };
     Indices indices;
     Values values;
-    size_t count = UINT64_MAX;
+    uint32_t count = UINT32_MAX;
     void fill(Json json);
   };
 
   Sparse sparse;
-  Array<size_t> max;
-  Array<size_t> min;
+  Array<uint32_t> max;
+  Array<uint32_t> min;
   StringBuffer type;
   ComponentType component_type = NONE;
 
-  size_t byte_offset = UINT64_MAX;
-  size_t count = UINT64_MAX;
+  uint32_t byte_offset = UINT32_MAX;
+  uint32_t count = UINT32_MAX;
   uint32_t buffer_view = UINT32_MAX;
 
   void fill(Json json);
@@ -127,6 +127,32 @@ struct Accessors {
   void fill(Json json);
 };
 
+// Meshes
+struct Mesh {
+  struct Primitive {
+    struct Attribute {
+      StringBuffer key;
+      uint32_t accessor;
+    };
+    Array<Attribute> attributes;
+    uint32_t indices = UINT32_MAX;
+    uint32_t material = UINT32_MAX;
+    uint32_t mode = UINT32_MAX;
+
+    void fill(Json json);
+  };
+  struct Primitives {
+    Array<Primitive> primitives;
+    void fill(Json json);
+  };
+  void fill();
+};
+struct Meshes {
+  Array<Mesh> meshes;
+  void fill(Json json);
+};
+
+// glTF 
 struct glTF {
   Asset asset;
   Scenes scenes;
