@@ -9,7 +9,10 @@ struct VulkanError {
 };
 
 #define ABORT(test, msg) \
-  if (!(test)) { std::cerr << "ABORTED: " << msg << '\n'; abort(); }
+  if(!(test)) { \
+    std::cerr << "ABORT in " << __FILE__ << ", line " << __LINE__ << ": " << msg << '\n'; \
+    abort(); \
+  }
 
 #if V_LAYERS
 
@@ -24,7 +27,10 @@ struct VulkanError {
 #endif
 
 #define DEBUG_ABORT(test, msg) \
-  if (!(test)) { std::cout << "DEBUG_ABORT: " << msg << '\n'; abort(); }
+  if (!(test)) { \
+    std::cerr << "DEBUG_ABORT in " << __FILE__ << ", line " << __LINE__ << ": " << msg << '\n'; \
+    abort(); \
+  }
 
 #else 
 

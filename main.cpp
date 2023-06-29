@@ -28,9 +28,6 @@ int main() {
   Json json = glTF::read_json("test_1.json");
   glTF::glTF gltf;
   gltf.fill(json);
-  std::cout << "Version: " << gltf.asset.version.c_str() << '\n';
-  std::cout << "Copy: " << gltf.asset.copyright.c_str() << '\n';
-
 
   MemoryService::instance()->shutdown();
   return 0;

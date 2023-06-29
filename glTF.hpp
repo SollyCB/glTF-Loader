@@ -1,8 +1,11 @@
 #pragma once 
 #include "nlohmann/json.hpp"
+#define V_LAYERS true
 #include "Array.hpp"
 #include "String.hpp"
+
 #include <cstdint>
+#include <limits>
 
 namespace Sol {
 namespace glTF {
@@ -10,6 +13,14 @@ namespace glTF {
 using Json = nlohmann::json;
 
 Json read_json(const char* file);
+
+extern const int32_t INVALID_INDEX;
+extern const uint32_t INVALID_COUNT;
+extern const float INVALID_FLOAT;
+extern const uint8_t PNG_BYTE_PATTERN[8];
+extern const uint8_t JPG_BYTE_PATTERN[3];
+extern const int32_t NEAREST_FALLBACK;
+extern const int32_t LINEAR_FALLBACK;
 
 // Asset
 struct Asset {
@@ -22,14 +33,14 @@ struct Asset {
 
 // Scenes
 struct Scene {
-  Array<uint32_t> nodes;
+  Array<int32_t> nodes;
   StringBuffer name;
 
   void fill(Json json);
 };
 struct Scenes {
   Array<Scene> scenes;
-  uint32_t scene = UINT32_MAX;
+  int32_t scene = INVALID_INDEX;
   void fill(Json json);
 };
 
@@ -39,11 +50,13 @@ struct Node {
   Array<float> scale;
   Array<float> translation;
   Array<float> matrix;
+  Array<float> weights;
 
-  Array<uint32_t> children;
+  Array<int32_t> children;
   StringBuffer name;
-  uint32_t mesh = UINT32_MAX;
-  uint32_t camera = UINT32_MAX;
+  int32_t mesh = INVALID_INDEX;
+  int32_t skin = INVALID_INDEX;
+  int32_t camera = INVALID_INDEX;
 
   void fill(Json json);
 };
@@ -68,10 +81,10 @@ struct BufferView {
     ARRAY_BUFFER = 34962,
     ELEMENT_ARRAY_BUFFER = 34963,
   };
-  uint32_t byte_length = UINT32_MAX;
-  uint32_t byte_offset = UINT32_MAX;
-  uint32_t byte_stride = UINT32_MAX;
-  uint32_t buffer = UINT32_MAX;
+  uint32_t byte_length = INVALID_COUNT;
+  uint32_t byte_offset = INVALID_COUNT;
+  uint32_t byte_stride = INVALID_COUNT;
+  int32_t buffer = INVALID_INDEX;
   Target target = NONE;
 
   void fill(Json json);
@@ -94,31 +107,31 @@ struct Accessor {
   };
   struct Sparse {
     struct Indices {
-      uint32_t byte_offset = UINT32_MAX;
-      uint32_t buffer_view = UINT32_MAX;
+      uint32_t byte_offset = INVALID_COUNT;
+      int32_t buffer_view = INVALID_INDEX;
       ComponentType component_type = NONE;
       void fill(Json json);
     };
     struct Values {
-      uint32_t byte_offset = UINT32_MAX;
-      uint32_t buffer_view = UINT32_MAX;
+      uint32_t byte_offset = INVALID_COUNT;
+      int32_t buffer_view = INVALID_INDEX;
       void fill(Json json);
     };
     Indices indices;
     Values values;
-    uint32_t count = UINT32_MAX;
+    uint32_t count = INVALID_COUNT;
     void fill(Json json);
   };
 
   Sparse sparse;
-  Array<uint32_t> max;
-  Array<uint32_t> min;
+  Array<float> max;
+  Array<float> min;
   StringBuffer type;
   ComponentType component_type = NONE;
 
-  uint32_t byte_offset = UINT32_MAX;
-  uint32_t count = UINT32_MAX;
-  uint32_t buffer_view = UINT32_MAX;
+  uint32_t byte_offset = INVALID_COUNT;
+  uint32_t count = INVALID_COUNT;
+  int32_t buffer_view = INVALID_INDEX;
 
   void fill(Json json);
 };
@@ -132,23 +145,100 @@ struct Mesh {
   struct Primitive {
     struct Attribute {
       StringBuffer key;
-      uint32_t accessor;
+      int32_t accessor = INVALID_INDEX;
     };
-    Array<Attribute> attributes;
-    uint32_t indices = UINT32_MAX;
-    uint32_t material = UINT32_MAX;
-    uint32_t mode = UINT32_MAX;
+    struct Target {
+      Array<Attribute> attributes;
+      void fill(Json json);
+    };
 
+    Array<Attribute> attributes;
+    Array<Target> targets;
+    int32_t indices = INVALID_INDEX;
+    int32_t material = INVALID_INDEX;
+    int32_t mode = INVALID_INDEX;
+
+    static void fill_attrib_array(Json json, Array<Attribute> *attributes);
     void fill(Json json);
   };
-  struct Primitives {
-    Array<Primitive> primitives;
+  struct Extras {
+    Array<StringBuffer> target_names;
     void fill(Json json);
   };
-  void fill();
+
+  Array<Primitive> primitives;
+  Array<float> weights;
+  Extras extras;
+
+  void fill(Json json);
 };
 struct Meshes {
   Array<Mesh> meshes;
+  void fill(Json json);
+};
+
+// Skins
+struct Skin {
+  Array<int32_t> joints;
+  int32_t i_bind_matrices = INVALID_INDEX;
+  int32_t skeleton = INVALID_INDEX;
+  void fill(Json json);
+};
+struct Skins {
+  Array<Skin> skins;
+  void fill(Json json);
+};
+
+// Textures
+struct Texture {
+  int32_t sampler = INVALID_INDEX;
+  int32_t source = INVALID_INDEX;
+  void fill(Json json);
+};
+struct Textures {
+  Array<Texture> textures;
+  void fill(Json json);
+};
+
+// Images
+struct Image {
+  StringBuffer uri;
+  StringBuffer mime_type;
+  int32_t buffer_view = INVALID_INDEX;
+
+  void fill(Json json);
+};
+struct Images {
+  Array<Image> images;
+  void fill(Json json);
+};
+
+// Samplers
+struct Sampler {
+  enum class Filter {
+    NONE = 0,
+    NEAREST = 9728,
+    LINEAR = 9729,
+    NEAREST_MIPMAP_NEAREST = 9984,
+    LINEAR_MIPMAP_NEAREST = 9985,
+    NEAREST_MIPMAP_LINEAR = 9986,
+    LINEAR_MIPMAP_LINEAR = 9987,
+  };
+  enum class Wrap {
+    NONE = 0,
+    CLAMP_TO_EDGE = 33071,
+    MIRRORED_REPEAT = 33648,
+    REPEAT = 10497,
+  };
+  Filter mag_filter = Filter::NONE;
+  Filter min_filter = Filter::NONE;
+  Wrap wrap_s = Wrap::NONE;
+  Wrap wrap_t = Wrap::NONE;
+
+  void fill(Json json);
+};
+struct Samplers {
+  Array<Sampler> samplers;
   void fill(Json json);
 };
 
@@ -160,6 +250,11 @@ struct glTF {
   Buffers buffers;
   BufferViews buffer_views;
   Accessors accessors;
+  Meshes meshes;
+  Skins skins;
+  Textures textures;
+  Images images;
+  Samplers samplers;
 
   void fill(Json json);
 };

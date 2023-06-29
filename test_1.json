@@ -106,6 +106,113 @@
           "componentType": 5123,
           "count": 42,
           "type": "VEC2"
+      },
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 12636,
+            "max": [
+                4212
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 2399,
+            "max": [
+                0.961799,
+                1.6397,
+                0.539252
+            ],
+            "min": [
+                -0.692985,
+                0.0992937,
+                -0.613282
+            ],
+            "type": "VEC3"
+        }
+  ],
+  "meshes": [
+      {
+          "primitives": [
+              {
+                  "attributes": {
+                      "NORMAL": 23,
+                      "POSITION": 22,
+                      "TANGENT": 24,
+                      "TEXCOORD_0": 25,
+                      "JOINTS_0": 179,
+                      "WEIGHTS_0": 179
+                  },
+                  "indices": 21,
+                  "material": 3,
+                  "mode": 4
+              },
+              {
+                  "attributes": {
+                      "NORMAL": 23,
+                      "POSITION": 22,
+                      "TANGENT": 24,
+                      "TEXCOORD_0": 25
+                  },
+                  "indices": 21,
+                  "material": 3,
+                  "targets": [
+                      {
+                          "NORMAL": 33,
+                          "POSITION": 32,
+                          "TANGENT": 34
+                      },
+                      {
+                          "NORMAL": 43,
+                          "POSITION": 42,
+                          "TANGENT": 44
+                      }
+                  ]
+              }
+          ],
+          "weights": [0, 0.5]
+      }
+  ],
+  "skins": [
+      {
+          "inverseBindMatrices": 0,
+          "joints": [ 1, 2 ],
+          "skeleton": 1
+      },
+      {
+          "inverseBindMatrices": 1,
+          "joints": [ 2, 3 ],
+          "skeleton": 2
+      }
+  ],
+  "textures": [
+      {
+          "sampler": 0,
+          "source": 2
+      }
+  ],
+  "images": [
+      {
+          "uri": "duckCM.png"
+      },
+      {
+          "bufferView": 14,
+          "mimeType": "image/jpeg"
+      }
+  ],
+  "samplers": [
+      {
+          "magFilter": 9729,
+          "minFilter": 9987,
+          "wrapS": 10497,
+          "wrapT": 10497
       }
   ],
   "asset" : {
