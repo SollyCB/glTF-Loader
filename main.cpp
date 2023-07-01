@@ -23,9 +23,14 @@ using Json = nlohmann::json;
 int main() {
   MemoryConfig mem_config;
   MemoryService::instance()->init(&mem_config);
-  MemoryService::instance()->scratch_allocator.init(4096);
+  MemoryService::instance()->scratch_allocator.init(1024 * 1024);
   
-  Json json = glTF::read_json("test_1.json");
+  Json json;
+  bool ok = glTF::read_json("test_1.json", &json);
+
+  if (!ok) 
+    ABORT(false, "File does not exist");
+
   glTF::glTF gltf;
   gltf.fill(json);
 

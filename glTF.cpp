@@ -21,14 +21,14 @@ const uint8_t JPG_BYTE_PATTERN[3] = { 0xFF, 0xD8, 0xFF };
 const int32_t NEAREST_FALLBACK = 9728;
 const int32_t LINEAR_FALLBACK = 9729;
 
-Json read_json(const char* file) {
+bool read_json(const char* file, Json *json) {
   std::ifstream f(file);
+  if (!f.is_open())
+    return false;
 
-  ABORT(f.is_open(), file);
-
-  Json data = Json::parse(f);
+  *json = Json::parse(f);
   f.close();
-  return data;
+  return true;
 }
 
 void glTF::fill(Json json) {
@@ -45,6 +45,7 @@ void glTF::fill(Json json) {
   samplers.fill(json);
   materials.fill(json);
   cameras.fill(json);
+  animations.fill(json);
 }
 
 namespace { 
@@ -63,6 +64,7 @@ namespace {
       return false;
 
     std::string tmp = json.value(key, "");
+    str->init(tmp.length());
     str->copy_here(tmp, tmp.length());
     return true;
   }
@@ -200,9 +202,9 @@ void Accessors::fill(Json json) {
 }
 void Accessor::fill(Json json) {
   load_array(json, "max", &max);
-  load_array(json, "min", &min);
   for(auto i : json["max"]) 
     max.push(i);
+  load_array(json, "min", &min);
   for(auto i : json["min"])
     min.push(i);
 
@@ -338,7 +340,15 @@ void Images::fill(Json json) {
 void Image::fill(Json json) {
   load_string(json, "uri", &uri);
   load_T(json, "bufferView", &buffer_view);
-  load_string(json, "mimeType", &mime_type);
+  StringBuffer tmp;
+  load_string(json, "mimeType", &tmp);
+
+  // NOTE:: This used to SEGFAULT as c_str() was being called on a potentially uninitialised StringBuffer 
+  // (load_string returns before StringBuffer::init() when the key is not found);
+  if (strcmp(tmp.c_str(), "image/jpeg") == 0)
+    mime_type = JPG;
+  if (strcmp(tmp.c_str(), "image/png") == 0)
+    mime_type = PNG;
 }
 
 // Samplers //////////////
@@ -380,7 +390,7 @@ void Material::fill(Json json) {
   emissive_texture.fill_tex(json, "emissiveTexture");
   occlusion_texture.fill_tex(json, "occlusionTexture");
 }
-void Material::Texture::fill_tex(Json json, const char* key) {
+void Material::MatTexture::fill_tex(Json json, const char* key) {
   auto tmp = json.find(key);
   if (tmp == json.end())
     return;
@@ -453,6 +463,47 @@ void Camera::fill(Json json) {
   }
 }
 
+// Animations ////////////////////
+void Animations::fill(Json json) {
+  load_array(json, "animations", &animations);
+  fill_obj_array(json, "animations", &animations);
+}
+void Animation::fill(Json json) {
+  load_string(json, "name", &name);
+
+  load_array(json, "channels", &channels);
+  fill_obj_array(json, "channels", &channels);
+  load_array(json, "samplers", &samplers);
+  fill_obj_array(json, "samplers", &samplers);
+}
+void Animation::Channel::fill(Json json) {
+  load_T(json, "sampler", &sampler);
+  load_T(json["target"], "node", &target.node);
+
+  StringBuffer tmp;
+  load_string(json["target"], "path", &tmp);
+  if (strcmp(tmp.c_str(), "rotation") == 0)
+    target.path = Target::ROTATION;
+  if (strcmp(tmp.c_str(), "translation") == 0)
+    target.path = Target::TRANSLATION;
+  if (strcmp(tmp.c_str(), "scale") == 0)
+    target.path = Target::SCALE;
+  if (strcmp(tmp.c_str(), "weights") == 0)
+    target.path = Target::WEIGHTS;
+}
+void Animation::Sampler::fill(Json json) {
+  load_T(json, "input", &input);
+  load_T(json, "output", &output);
+
+  StringBuffer tmp;
+  load_string(json, "interpolation", &tmp);
+  if(strcmp(tmp.c_str(), "LINEAR") == 0)
+    interpolation = LINEAR;
+  if(strcmp(tmp.c_str(), "STEP") == 0)
+    interpolation = STEP;
+  if(strcmp(tmp.c_str(), "CUBICSPLINE") == 0)
+    interpolation = CUBICSPLINE;
+}
 
 } // namespace glTF
 } // namespace Sol

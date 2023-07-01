@@ -1,4 +1,5 @@
 #pragma once 
+
 #include "nlohmann/json.hpp"
 #define V_LAYERS true
 #include "Array.hpp"
@@ -12,7 +13,7 @@ namespace glTF {
 
 using Json = nlohmann::json;
 
-Json read_json(const char* file);
+bool read_json(const char* file, Json *json);
 
 extern const int32_t INVALID_INDEX;
 extern const uint32_t INVALID_COUNT;
@@ -96,15 +97,6 @@ struct BufferViews {
 
 // Accessors
 struct Accessor {
-  enum ComponentType {
-    NONE = 0,
-    INT8 = 5120,
-    UINT8 = 5121,
-    INT16 = 5122,
-    UINT16 = 5123,
-    UINT32 = 5125,
-    FLOAT = 5126,
-  };
   enum Type {
     SCALAR,
     VEC2,
@@ -114,6 +106,16 @@ struct Accessor {
     MAT3,
     MAT4,
   };
+  enum ComponentType {
+    NONE = 0,
+    INT8 = 5120,
+    UINT8 = 5121,
+    INT16 = 5122,
+    UINT16 = 5123,
+    UINT32 = 5125,
+    FLOAT = 5126,
+  };
+
   struct Sparse {
     struct Indices {
       uint32_t byte_offset = INVALID_COUNT;
@@ -211,8 +213,13 @@ struct Textures {
 
 // Images
 struct Image {
+  enum MimeType {
+    NONE,
+    PNG,
+    JPG,
+  };
   StringBuffer uri;
-  StringBuffer mime_type;
+  MimeType mime_type = NONE;
   int32_t buffer_view = INVALID_INDEX;
 
   void fill(Json json);
@@ -253,7 +260,7 @@ struct Samplers {
 
 // Materials
 struct Material {
-  struct Texture {
+  struct MatTexture {
     float scale = INVALID_FLOAT;
     int32_t index = INVALID_INDEX;
     int32_t tex_coord = INVALID_INDEX;
@@ -262,8 +269,8 @@ struct Material {
   };
   struct PbrMetallicRoughness {
     Array<float> base_color_factor;
-    Texture base_color_texture;
-    Texture metallic_roughness_texture;
+    MatTexture base_color_texture;
+    MatTexture metallic_roughness_texture;
     float metallic_factor = INVALID_FLOAT;
     float roughness_factor = INVALID_FLOAT;
 
@@ -278,9 +285,9 @@ struct Material {
   PbrMetallicRoughness pbr_metallic_roughness;
   Array<float> emissive_factor;
   StringBuffer name;
-  Texture normal_texture;
-  Texture occlusion_texture;
-  Texture emissive_texture;
+  MatTexture normal_texture;
+  MatTexture occlusion_texture;
+  MatTexture emissive_texture;
   AlphaMode alpha_mode = OPAQUE;
   float alpha_cutoff = INVALID_FLOAT;
   bool double_sided = false;
@@ -315,6 +322,53 @@ struct Cameras {
   void fill(Json json);
 };
 
+// Animations
+struct Animation {
+  struct Channel {
+    struct Target {
+      enum Path {
+        NONE,
+        TRANSLATION,
+        ROTATION,
+        SCALE,
+        WEIGHTS,
+      }; // Path
+
+      int32_t node = INVALID_INDEX;
+      Path path = NONE;
+    }; // Target
+
+    Target target;
+    int32_t sampler = INVALID_INDEX;
+
+    void fill(Json json);
+  }; // Channel
+
+  struct Sampler {
+    enum Interpolation {
+      LINEAR,
+      STEP,
+      CUBICSPLINE,
+    };
+    Interpolation interpolation;
+    int32_t input = INVALID_INDEX;
+    int32_t output = INVALID_INDEX;
+
+    void fill(Json json);
+  }; // Sampler
+
+  // NOTE: Accessor comp_type normalisation rules (see spec, right before "Specifying Extensions"...)
+  Array<Channel> channels;
+  Array<Sampler> samplers;
+  StringBuffer name;
+
+  void fill(Json json);
+};
+struct Animations {
+  Array<Animation> animations;
+  void fill(Json json);
+};
+
 // glTF 
 struct glTF {
   Asset asset;
@@ -330,6 +384,7 @@ struct glTF {
   Samplers samplers;
   Materials materials;
   Cameras cameras;
+  Animations animations;
 
   void fill(Json json);
 };

@@ -78,15 +78,16 @@ void StringBuffer::kill() {
 }
 
 void StringBuffer::grow(size_t size) {
-  // +1 for null byte is already is not in the cap
+  // +1 for null byte is not in the cap
   if (alloc == &MemoryService::instance()->system_allocator) {
     str = (char*)mem_realloc(size + cap + 1, str);
   } else {
     char* old_str = str;
     str = (char*)lin_alloca(size + cap + 1, 1);
-    mem_cpy(str, old_str, len);
+    mem_cpy(str, old_str, len + 1); // len + 1 for null byte
   }
   cap += size;
+  str[len] = '\0'; // Just for safety sake, in case for whatever reason it wasnt there for the copy...
 }
 void StringBuffer::copy_here(const char *str_, size_t size) {
   if (size == 0) {
@@ -104,8 +105,10 @@ void StringBuffer::copy_here(const char *str_, size_t size) {
 }
 
 void StringBuffer::copy_here(std::string str_, size_t size) {
+  size = str_.length();
   if (size == 0)
-    size = str_.length();
+    return;
+  //ABORT(size > 0, "StringBuffer::copy_here size to copy must be > 0");
 
   if (cap < size) 
     grow(size - cap);
@@ -141,7 +144,10 @@ void StringBuffer::push(std::string str_) {
 }
 
 const char* StringBuffer::c_str() {
-  return (const char*)str;
+  if (len == 0)
+    return "\0";
+  else 
+    return (const char*)str;
 }
 StringView StringBuffer::view(size_t start, size_t end) {
   StringView view;
