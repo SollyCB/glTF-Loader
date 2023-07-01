@@ -54,12 +54,14 @@ StringBuffer StringBuffer::get(size_t size, std::string str_, Allocator *alloc_)
 }
 
 void StringBuffer::init(size_t size) {
+  ABORT(size > 0, "StringBuffer::init: size must be greater than 0");
   cap = size; 
 
   if (alloc == &MemoryService::instance()->system_allocator)
     str = (char*)mem_alloc(size + 1);
   else 
     str = (char*)lin_alloca(size + 1, 1);
+  str[0] = '\0';
 }
 void StringBuffer::init(size_t size, Allocator *alloc_) {
   cap = size;

@@ -105,6 +105,15 @@ struct Accessor {
     UINT32 = 5125,
     FLOAT = 5126,
   };
+  enum Type {
+    SCALAR,
+    VEC2,
+    VEC3,
+    VEC4,
+    MAT2,
+    MAT3,
+    MAT4,
+  };
   struct Sparse {
     struct Indices {
       uint32_t byte_offset = INVALID_COUNT;
@@ -126,7 +135,7 @@ struct Accessor {
   Sparse sparse;
   Array<float> max;
   Array<float> min;
-  StringBuffer type;
+  Type type;
   ComponentType component_type = NONE;
 
   uint32_t byte_offset = INVALID_COUNT;
@@ -242,6 +251,70 @@ struct Samplers {
   void fill(Json json);
 };
 
+// Materials
+struct Material {
+  struct Texture {
+    float scale = INVALID_FLOAT;
+    int32_t index = INVALID_INDEX;
+    int32_t tex_coord = INVALID_INDEX;
+
+    void fill_tex(Json json, const char* key);
+  };
+  struct PbrMetallicRoughness {
+    Array<float> base_color_factor;
+    Texture base_color_texture;
+    Texture metallic_roughness_texture;
+    float metallic_factor = INVALID_FLOAT;
+    float roughness_factor = INVALID_FLOAT;
+
+    void fill(Json json);
+  };
+  enum AlphaMode {
+    OPAQUE,
+    MASK,
+    BLEND,
+  };
+
+  PbrMetallicRoughness pbr_metallic_roughness;
+  Array<float> emissive_factor;
+  StringBuffer name;
+  Texture normal_texture;
+  Texture occlusion_texture;
+  Texture emissive_texture;
+  AlphaMode alpha_mode = OPAQUE;
+  float alpha_cutoff = INVALID_FLOAT;
+  bool double_sided = false;
+
+  void fill(Json json);
+};
+struct Materials {
+  Array<Material> materials;
+  void fill(Json json);
+};
+
+// Cameras 
+struct Camera {
+  enum Type {
+    UNKNOWN,
+    ORTHO,
+    PERSPECTIVE,
+  };
+  StringBuffer name;
+  Type type = UNKNOWN;
+  float aspect_ratio = INVALID_FLOAT;
+  float yfov = INVALID_FLOAT;
+  float xmag = INVALID_FLOAT;
+  float ymag = INVALID_FLOAT;
+  float zfar = INVALID_FLOAT;
+  float znear = INVALID_FLOAT;
+
+  void fill(Json json);
+};
+struct Cameras {
+  Array<Camera> cameras;
+  void fill(Json json);
+};
+
 // glTF 
 struct glTF {
   Asset asset;
@@ -255,6 +328,8 @@ struct glTF {
   Textures textures;
   Images images;
   Samplers samplers;
+  Materials materials;
+  Cameras cameras;
 
   void fill(Json json);
 };

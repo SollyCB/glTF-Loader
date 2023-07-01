@@ -43,6 +43,8 @@ void glTF::fill(Json json) {
   textures.fill(json);
   images.fill(json);
   samplers.fill(json);
+  materials.fill(json);
+  cameras.fill(json);
 }
 
 namespace { 
@@ -204,7 +206,23 @@ void Accessor::fill(Json json) {
   for(auto i : json["min"])
     min.push(i);
 
-  load_string(json, "type", &type);
+  StringBuffer tmp;
+  load_string(json, "type", &tmp);
+  if(strcmp("SCALAR", tmp.c_str()) == 0)
+    type = SCALAR;
+  if(strcmp("VEC2", tmp.c_str()) == 0)
+    type = VEC2;
+  if(strcmp("VEC3", tmp.c_str()) == 0)
+    type = VEC3;
+  if(strcmp("VEC4", tmp.c_str()) == 0)
+    type = VEC4;
+  if(strcmp("MAT2", tmp.c_str()) == 0)
+    type = MAT2;
+  if(strcmp("MAT3", tmp.c_str()) == 0)
+    type = MAT3;
+  if(strcmp("MAT4", tmp.c_str()) == 0)
+    type = MAT4;
+
   load_T(json, "componentType", &component_type);
   load_T(json, "byteOffset", &byte_offset);
   load_T(json, "count", &count);
@@ -334,6 +352,107 @@ void Sampler::fill(Json json) {
   load_T(json, "wrapS", &wrap_s);
   load_T(json, "wrapT", &wrap_t);
 }
+
+// Materials ///////////////////
+void Materials::fill(Json json) {
+  load_array(json, "materials", &materials);
+  fill_obj_array(json, "materials", &materials);
+}
+void Material::fill(Json json) {
+  load_string(json, "name", &name);
+  load_T(json, "alphaCutoff", &alpha_cutoff);
+  load_T(json, "doubleSided", &double_sided);
+  load_array(json, "emissiveFactor", &emissive_factor);
+  for(auto i : json["emissiveFactor"])
+    emissive_factor.push(i);
+
+  StringBuffer tmp;
+  load_string(json, "alphaMode", &tmp);
+  if (strcmp(tmp.c_str(), "OPAQUE") == 0)
+    alpha_mode = OPAQUE;
+  if (strcmp(tmp.c_str(), "MASK") == 0)
+    alpha_mode = MASK;
+  if (strcmp(tmp.c_str(), "BLEND") == 0)
+    alpha_mode = BLEND;
+
+  pbr_metallic_roughness.fill(json);
+  normal_texture.fill_tex(json, "normalTexture");
+  emissive_texture.fill_tex(json, "emissiveTexture");
+  occlusion_texture.fill_tex(json, "occlusionTexture");
+}
+void Material::Texture::fill_tex(Json json, const char* key) {
+  auto tmp = json.find(key);
+  if (tmp == json.end())
+    return;
+  else
+    json = tmp.value();
+
+  load_T(json, "scale", &scale);
+  load_T(json, "strength", &scale);
+  load_T(json, "index", &index);
+  load_T(json, "texCoord", &tex_coord);
+}
+void Material::PbrMetallicRoughness::fill(Json json) {
+  auto tmp = json.find("pbrMetallicRoughness");
+  if (tmp == json.end())
+    return;
+  else
+    json = tmp.value();
+
+  load_array(json, "baseColorFactor", &base_color_factor);
+  for(auto i : json["baseColorFactor"])
+    base_color_factor.push(i);
+  base_color_texture.fill_tex(json, "baseColorTexture"); 
+  metallic_roughness_texture.fill_tex(json, "metallicRoughnessTexture"); 
+  load_T(json, "metallicFactor", &metallic_factor);
+  load_T(json, "roughnessFactor", &roughness_factor);
+}
+
+// Cameras /////////////////////
+void Cameras::fill(Json json) {
+  load_array(json, "cameras", &cameras);
+  fill_obj_array(json, "cameras", &cameras);
+}
+void Camera::fill(Json json) {
+  load_string(json, "name", &name);
+
+  StringBuffer tmp;
+  load_string(json, "type", &tmp);
+  if (strcmp(tmp.c_str(), "perspective") == 0)
+    type = PERSPECTIVE;
+  if (strcmp(tmp.c_str(), "orthographic") == 0)
+    type = ORTHO;
+  ABORT(type != UNKNOWN, "glTF model camera type must be defined");
+
+  load_T(json, "aspectRatio", &aspect_ratio);
+  load_T(json, "yfov", &yfov);
+  load_T(json, "xmag", &xmag);
+  load_T(json, "ymag", &ymag);
+  load_T(json, "zfar", &zfar);
+  load_T(json, "znear", &znear);
+
+  if (type == ORTHO) {
+    load_T(json["orthographic"], "xmag", &xmag);
+    load_T(json["orthographic"], "ymag", &ymag);
+    load_T(json["orthographic"], "zfar", &zfar);
+    load_T(json["orthographic"], "znear", &znear);
+
+    ABORT(xmag != INVALID_FLOAT, "glTF model Ortho camera must have XMAG defined");
+    ABORT(ymag != INVALID_FLOAT, "glTF model Ortho camera must have YMAG defined");
+    ABORT(zfar != INVALID_FLOAT, "glTF model Ortho camera must have ZFAR defined");
+    ABORT(znear != INVALID_FLOAT, "glTF model Ortho camera must have ZNEAR defined");
+  }
+  if (type == PERSPECTIVE) {
+    load_T(json["perspective"], "aspectRatio", &aspect_ratio);
+    load_T(json["perspective"], "yfov", &yfov);
+    load_T(json["perspective"], "zfar", &zfar);
+    load_T(json["perspective"], "znear", &znear);
+
+    ABORT(yfov != INVALID_FLOAT, "glTF model Perspective camera must have YFOV defined");
+    ABORT(znear != INVALID_FLOAT, "glTF model Perspective camera must have ZNEAR defined");
+  }
+}
+
 
 } // namespace glTF
 } // namespace Sol

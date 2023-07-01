@@ -215,6 +215,64 @@
           "wrapT": 10497
       }
   ],
+  "materials": [
+      {
+          "name": "Material0",
+          "pbrMetallicRoughness": {
+              "baseColorFactor": [ 0.5, 0.5, 0.5, 1.0 ],
+              "baseColorTexture": {
+                  "index": 1,
+                  "texCoord": 1
+              },
+              "metallicFactor": 1,
+              "roughnessFactor": 1,
+              "metallicRoughnessTexture": {
+                  "index": 2,
+                  "texCoord": 1
+              }
+          },
+          "normalTexture": {
+              "scale": 2,
+              "index": 3,
+              "texCoord": 1
+          },
+          "emissiveFactor": [ 0.2, 0.1, 0.0 ],
+          "alphaMode": "BLEND",
+          "alphaCutoff": 0.2,
+          "doubleSided": true
+      }
+  ],
+  "cameras": [
+      {
+          "name": "Finite perspective camera",
+          "type": "perspective",
+          "perspective": {
+              "aspectRatio": 1.5,
+              "yfov": 0.660593,
+              "zfar": 100,
+              "znear": 0.01
+          }
+      },
+      {
+          "name": "Infinite perspective camera",
+          "type": "perspective",
+          "perspective": {
+              "aspectRatio": 1.5,
+              "yfov": 0.660593,
+              "znear": 0.01
+          }
+      },
+      {
+          "name": "Ortho Camera",
+          "type": "orthographic",
+          "orthographic": {
+              "xmag": 1.5,
+              "ymag": 1.5,
+              "zfar": 100,
+              "znear": 0.01
+          }
+      }
+  ],
   "asset" : {
     "version" : "2.0",
     "copyright" : "GAY COPYRIGHT"
